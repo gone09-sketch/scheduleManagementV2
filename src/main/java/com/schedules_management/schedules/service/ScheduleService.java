@@ -60,7 +60,7 @@ public class ScheduleService {
         // 1. 유저 존재 유무 확인(검증)
             // name이 null 이면 유저 확인 자체 스킵
         if (userName != null) {
-            userRepository.findByName(userName).orElseThrow(
+            userRepository.findByUserName(userName).orElseThrow(
                     () -> new IllegalArgumentException("존재하지 않은 유저입니다."));
         }
 
