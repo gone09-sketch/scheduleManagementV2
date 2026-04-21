@@ -45,6 +45,7 @@ public class ScheduleService {
         // dto 객체 생성 후 반환
         ScheduleCreateResponseDto createResponseDto = new ScheduleCreateResponseDto(
                 savedSchedule.getScheduleID(),
+                savedSchedule.getUser().getName(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContent(),
                 savedSchedule.getCreatedAt(),
@@ -71,6 +72,7 @@ public class ScheduleService {
                 // dto로 변환
                 .map(schedule -> new ScheduleGetResponseDto(
                         schedule.getScheduleID(),
+                        schedule.getUser().getName(),
                         schedule.getTitle(),
                         schedule.getCreatedAt(),
                         schedule.getUpdatedAt()
@@ -90,6 +92,7 @@ public class ScheduleService {
 
         ScheduleGetResponseDto getOneResponseDto = new ScheduleGetResponseDto(
                 schedule.getScheduleID(),
+                schedule.getUser().getName(),
                 schedule.getTitle(),
                 schedule.getCreatedAt(),
                 schedule.getUpdatedAt()
@@ -100,8 +103,8 @@ public class ScheduleService {
     // 일정수정
     @Transactional
     public SchedulePatchResponseDto patchSchedule(Long userID, Long scheduleID, SchedulePatchRequestDto patchRequestDto) {
-        // 1. 유저 확인
-        User user = userRepository.findByUserID(userID).orElseThrow(
+        // 1. 유저 유무 확인(검증)
+        userRepository.findByUserID(userID).orElseThrow(
                 () -> new IndexOutOfBoundsException("존재하지 않는 유저입니다"));
 
         // 2. DB에서 해당 scheduleID 정보 가져오기
@@ -117,6 +120,7 @@ public class ScheduleService {
         // 3. 반환
         SchedulePatchResponseDto patchResponseDto = new SchedulePatchResponseDto(
                 updatedSchedule.getScheduleID(),
+                updatedSchedule.getUser().getName(),
                 updatedSchedule.getTitle(),
                 updatedSchedule.getContent(),
                 updatedSchedule.getCreatedAt(),
