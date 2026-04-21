@@ -134,6 +134,6 @@ public class UserService {
         scheduleRepository.clearUserFromSchedule(userID);
 
         // 유저 삭제처리 (soft delete)
-        user.isDeleted();
+        user.delete();
     }
 }

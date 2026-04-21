@@ -70,7 +70,7 @@ public class User {
         return updatedAt;
     }
     public boolean isDeleted() {
-        return isDeleted();
+        return isDeleted;
     }
 
     // update
