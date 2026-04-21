@@ -28,8 +28,8 @@ public class ScheduleService {
     // 일정생성
     @Transactional
     public ScheduleCreateResponseDto createSchedule(Long userID, ScheduleCreateRequestDto createRequestDto) {
-        // 1. 유저 확인
-        User user = userRepository.findById(userID).orElseThrow(
+        // 1. 유저 확인(검증)
+        User user = userRepository.findByUserID(userID).orElseThrow(
                 () -> new IndexOutOfBoundsException("존재하지 않는 유저입니다"));
 
         // 2. 엔티티 객체 생성
@@ -57,14 +57,14 @@ public class ScheduleService {
     // 전체조회
     @Transactional(readOnly = true)
     public List<ScheduleGetResponseDto> getAllSchedule(String userName) {
-        // 1. 유저 존재 유무 확인
+        // 1. 유저 존재 유무 확인(검증)
             // name이 null 이면 유저 확인 자체 스킵
         if (userName != null) {
             userRepository.findByName(userName).orElseThrow(
-                    () -> new IllegalArgumentException("존재하지 않은 사용자입니다."));
+                    () -> new IllegalArgumentException("존재하지 않은 유저입니다."));
         }
 
-        // 2. 유저 필터링
+        // 2. 일정 목록 조회(데이터 가져오기)
             // name이 null 이면 전체조회
         List<ScheduleGetResponseDto> getAllResponseDto = scheduleRepository.findAllByUserName(userName)
                 .stream()
@@ -101,7 +101,7 @@ public class ScheduleService {
     @Transactional
     public SchedulePatchResponseDto patchSchedule(Long userID, Long scheduleID, SchedulePatchRequestDto patchRequestDto) {
         // 1. 유저 확인
-        User user = userRepository.findById(userID).orElseThrow(
+        User user = userRepository.findByUserID(userID).orElseThrow(
                 () -> new IndexOutOfBoundsException("존재하지 않는 유저입니다"));
 
         // 2. DB에서 해당 scheduleID 정보 가져오기
@@ -130,8 +130,9 @@ public class ScheduleService {
     @Transactional
     public void deleteSchedule(Long userID, Long scheduleID) {
         // 1. 유저 확인
-        User user = userRepository.findById(userID).orElseThrow(
+        User user = userRepository.findByUserID(userID).orElseThrow(
                 () -> new IndexOutOfBoundsException("존재하지 않는 유저입니다"));
+
         // 2. 해당 scheduleID 확인
         scheduleRepository.findById(scheduleID).orElseThrow(
                 () -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));

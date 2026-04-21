@@ -31,11 +31,11 @@ public class Schedule {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    // User가 있어야만 스케줄도 존재할 수 있음
-    /* JPA는 ID가 아닌 객체로 연결하기 때문에 User객체로 연결한다
+    /*유저가 탈퇴하여도 일정 DB는 남겨놓아 추후 재가입 및 이전 일정 복구를 원한다면 복구할 수 있도록 한다.
+     * JPA는 ID가 아닌 객체로 연결하기 때문에 User객체로 연결한다
      */
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) // JPA에서 null 허용 여부
-    @JoinColumn(name = "user_id", nullable = false) // DB에서 null 허용 여부
+    @ManyToOne(fetch = FetchType.LAZY, optional = true) // JPA에서 null 허용 여부
+    @JoinColumn(name = "user_id", nullable = true) // DB에서 null 허용 여부
     private User user; // userID가 아닌 User 객체
 
 

@@ -32,6 +32,9 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Column
+    private boolean isDeleted = false;
+
 
     // 생성자
     /* JPA 가 활용하는 생성자
@@ -66,12 +69,20 @@ public class User {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+    public boolean isDeleted() {
+        return isDeleted();
+    }
 
     // update
     public void update(String email, String password) {
         //null이 아닐 때만 변경, null인 경우 기존 데이터 유지
         if(email != null) this.email = email;
         if(password != null) this.password = password;
+    }
+
+    // delete
+    public void delete() {
+        this.isDeleted = true;
     }
 
 }

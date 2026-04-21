@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping
+//@RequestMapping
 
 public class ScheduleController {
     // 속성
@@ -42,7 +42,7 @@ public class ScheduleController {
     }
 
     // 단건조회
-    @GetMapping("/{scheduleID}")
+    @GetMapping("/schedules/{scheduleID}")
     public ResponseEntity<ScheduleGetResponseDto> getOneScheduleAPI(
             @PathVariable("scheduleID") Long scheduleID) {
 
