@@ -1,7 +1,9 @@
 package com.schedules_management.users.service;
 
 
+import com.schedules_management.session.LoginRequestDto;
 import com.schedules_management.schedules.repository.ScheduleRepository;
+import com.schedules_management.session.SessionUser;
 import com.schedules_management.users.dto.*;
 import com.schedules_management.users.entity.User;
 import com.schedules_management.users.repository.UserRepository;
@@ -97,7 +99,7 @@ public class UserService {
     }
 
 
-    // 유저수정
+    // 유저수정(이메일 및 비밀번호 수정 가능)
     @Transactional
     public UserPatchResponseDto patchUser(Long userID, UserPatchRequestDto patchRequestDto) {
 
@@ -122,7 +124,7 @@ public class UserService {
         return patchResponseDto;
     }
 
-    // 유저삭제
+    // 유저삭제(회원탈퇴)
     @Transactional
     public void deleteUser(Long userID) {
 
@@ -136,4 +138,29 @@ public class UserService {
         // 유저 삭제처리 (soft delete)
         user.delete();
     }
+
+    // 로그인
+    @Transactional(readOnly = true)
+    public SessionUser login(LoginRequestDto loginRequestDto) {
+        // 1. 이메일로 유저 유무 확인 (검증)
+        User user = userRepository.findByUserEmail(loginRequestDto.getEmail()).orElseThrow(
+                () -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
+
+        // 2. 비밀번호 일치 확인 (검증)
+        if(!user.getPassword().equals(loginRequestDto.getPassword())) {
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        // 3. 새 SessionUser 객체에 userID와 email 저장
+        SessionUser newSessionUser = new SessionUser(
+                user.getUserID(),
+                user.getEmail()
+        );
+
+        // 4. 반환해주기
+        return newSessionUser;
+    }
+
+
+
 }

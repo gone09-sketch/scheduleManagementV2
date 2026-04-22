@@ -1,7 +1,10 @@
 package com.schedules_management.users.controller;
 
+import com.schedules_management.session.LoginRequestDto;
+import com.schedules_management.session.SessionUser;
 import com.schedules_management.users.dto.*;
 import com.schedules_management.users.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,24 +54,59 @@ public class UserController {
     }
 
     // 유저수정
-    @PatchMapping("/{userID}")
+    @PatchMapping
     public ResponseEntity<UserPatchResponseDto> patchUserAPI(
-            @PathVariable("userID") Long userID,
+            @SessionAttribute(name = "loginUser", required = false) SessionUser sessionUser,
             @RequestBody UserPatchRequestDto patchRequestDto) {
 
-        UserPatchResponseDto patchResponseAPI = userService.patchUser(userID, patchRequestDto);
+        // 로그인이 되었는지 확인
+        if(sessionUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserPatchResponseDto patchResponseAPI = userService.patchUser(sessionUser.getUserID(), patchRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(patchResponseAPI);
     }
 
     // 유저삭제
     @DeleteMapping("/{userID}")
     public ResponseEntity<Void> deleteUserAPI(
-            @PathVariable("userID") Long userID) {
+            @SessionAttribute(name = "loginUser", required = false) SessionUser sessionUser) {
 
-        userService.deleteUser(userID);
+        // 로그인이 되었는지 확인
+        if(sessionUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        userService.deleteUser(sessionUser.getUserID());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
     }
 
+    // 로그인
+    @PostMapping("/login")
+    public ResponseEntity<Void> loginAPI(
+            @Valid
+            @RequestBody LoginRequestDto loginRequestDto,
+            HttpSession httpSession) {
+        SessionUser sessionUser = userService.login(loginRequestDto);
+        httpSession.setAttribute("loginUser", sessionUser);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logoutAPI(
+            @SessionAttribute(name = "loginUser", required = false) SessionUser sessionUser,
+            HttpSession httpSession) {
+
+        // 로그인이 되었는지 확인
+        if(sessionUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        httpSession.invalidate();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 
 }
