@@ -27,11 +27,11 @@ public class ScheduleService {
 
     // 일정생성
     @Transactional
-    public ScheduleCreateResponseDto createSchedule(Long userID, ScheduleCreateRequestDto createRequestDto) {
+    public ScheduleCreateResponseDto createSchedule(Long sessionUserID, ScheduleCreateRequestDto createRequestDto) {
 
         // 1. 해당 userID로 유저 존재 유무 확인(검증)
-        User user = userRepository.findByUserID(userID).orElseThrow(
-                () -> new IndexOutOfBoundsException("존재하지 않는 유저입니다"));
+        User user = userRepository.findByUserID(sessionUserID).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 유저입니다"));
 
         // 2. 엔티티 객체 생성 (+요청 데이터 넣어주기)
         Schedule newSchedule = new Schedule(
@@ -115,17 +115,17 @@ public class ScheduleService {
 
     // 일정수정
     @Transactional
-    public SchedulePatchResponseDto patchSchedule(Long userID, Long scheduleID, SchedulePatchRequestDto patchRequestDto) {
+    public SchedulePatchResponseDto patchSchedule(Long sessionUserID, Long scheduleID, SchedulePatchRequestDto patchRequestDto) {
         // 1. 해당 userID로 유저 존재 유무 확인(검증)
-        userRepository.findByUserID(userID).orElseThrow(
+        userRepository.findByUserID(sessionUserID).orElseThrow(
                 () -> new IndexOutOfBoundsException("존재하지 않는 유저입니다"));
 
         // 2. 해당 scheduleID로 일정 존재 유무 확인(검증) + 데이터 가져와서 담기
-        Schedule updatedSchedule= scheduleRepository.findById(scheduleID).orElseThrow(
+        Schedule foundSchedule = scheduleRepository.findById(scheduleID).orElseThrow(
                 () -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
 
         // 2. 수정내용 Schedule 엔티티에 반영
-        updatedSchedule.update(
+        Schedule updatedSchedule = foundSchedule.update(
                 patchRequestDto.getTitle(),
                 patchRequestDto.getContent()
         );
@@ -147,9 +147,9 @@ public class ScheduleService {
 
     // 일정삭제
     @Transactional
-    public void deleteSchedule(Long userID, Long scheduleID) {
+    public void deleteSchedule(Long sessionUserID, Long scheduleID) {
         // 1. 해당 userID로 유저 존재 유무 확인(검증)
-        userRepository.findByUserID(userID).orElseThrow(
+        userRepository.findByUserID(sessionUserID).orElseThrow(
                 () -> new IndexOutOfBoundsException("존재하지 않는 유저입니다"));
 
         // 2. 해당 scheduleID 확인

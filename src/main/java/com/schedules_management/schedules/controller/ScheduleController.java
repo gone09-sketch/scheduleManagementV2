@@ -30,7 +30,7 @@ public class ScheduleController {
             @RequestBody ScheduleCreateRequestDto createRequestDto) {
 
         // 로그인이 되었는지 확인
-        if(sessionUser == null) {
+        if (sessionUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 

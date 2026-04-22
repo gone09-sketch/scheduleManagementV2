@@ -76,10 +76,11 @@ public class Schedule {
 
 
     // update
-    public void update(String title, String content) {
+    public Schedule update(String title, String content) {
         //null이 아닐 때만 변경, null인 경우 기존 데이터 유지
         if(title != null) this.title = title;
         if(content != null) this.content = content;
+        return this;
     }
 
 

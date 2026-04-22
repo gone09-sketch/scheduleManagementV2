@@ -28,14 +28,8 @@ public class UserController {
     // 유저생성(회원가입)
     @PostMapping
     public ResponseEntity<UserCreateResponseDto> createUserAPI(
-            @SessionAttribute(name = "loginUser", required = false) SessionUser sessionUser,
             @Valid
             @RequestBody UserCreateRequestDto createRequestDto) {
-
-        // 이미 로그인 상태면 차단
-        if (sessionUser != null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
 
         UserCreateResponseDto createResponseAPI = userService.createUser(createRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createResponseAPI);
@@ -77,16 +71,20 @@ public class UserController {
     // 유저삭제
     @DeleteMapping("/{userID}")
     public ResponseEntity<Void> deleteUserAPI(
-            @SessionAttribute(name = "loginUser", required = false) SessionUser sessionUser) {
+            @SessionAttribute(name = "loginUser", required = false) SessionUser sessionUser,
+            HttpSession httpSession) {
 
         // 로그인이 되었는지 확인
         if(sessionUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        // 유저 삭제
         userService.deleteUser(sessionUser.getUserID());
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
+        //탈퇴한 후 자동 로그아웃
+        httpSession.invalidate();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     // 로그인
@@ -95,6 +93,7 @@ public class UserController {
             @Valid
             @RequestBody LoginRequestDto loginRequestDto,
             HttpSession httpSession) {
+
         SessionUser sessionUser = userService.login(loginRequestDto);
         httpSession.setAttribute("loginUser", sessionUser);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -107,12 +106,9 @@ public class UserController {
             HttpSession httpSession) {
 
         // 로그인이 되었는지 확인
-        if(sessionUser == null) {
+        if (sessionUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        // 로그인 상태에서 회원 탈퇴를 했다면 자동 로그아웃
-        userService.deleteUser(sessionUser.getUserID());
 
         httpSession.invalidate();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

@@ -33,4 +33,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.email = :userEmail AND u.isDeleted = false")
     Optional<User> findByUserEmail(@Param("userEmail") String userEmail);
 
+    // 유저 이메일 중복 확인 (검증)
+    boolean existsByEmail(String email);
+
 }

@@ -30,17 +30,22 @@ public class UserService {
     // 유저생성(회원가입)
     @Transactional
     public UserCreateResponseDto createUser(UserCreateRequestDto createRequestDto) {
-        // 1. 엔티티 객체 생성 (+요청 데이터 넣어주기)
+        // 1. 동일 이메일이 있는지 확인(중복회원가입) (검증)
+        if (userRepository.existsByEmail(createRequestDto.getEmail())) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        // 2. 엔티티 객체 생성 (+요청 데이터 넣어주기)
         User newUser = new User(
                 createRequestDto.getName(),
                 createRequestDto.getEmail(),
                 createRequestDto.getPassword()
         );
 
-        // 2. 저장 + 저장된 entity의 데이터 담기
+        // 3. 저장 + 저장된 entity의 데이터 담기
         User savedUser = userRepository.save(newUser);
 
-        // 3. dto 객체 생성(+저장된 데이터 넣기)
+        // 4. dto 객체 생성(+저장된 데이터 넣기)
         UserCreateResponseDto createResponseDto = new UserCreateResponseDto(
                 savedUser.getUserID(),
                 savedUser.getName(),
@@ -49,7 +54,7 @@ public class UserService {
                 savedUser.getUpdatedAt()
         );
 
-        // 4. 반환
+        // 5. 반환
         return createResponseDto;
     }
 
@@ -110,10 +115,10 @@ public class UserService {
 
     // 유저수정(이메일 및 비밀번호 수정 가능)
     @Transactional
-    public UserPatchResponseDto patchUser(Long userID, UserPatchRequestDto patchRequestDto) {
+    public UserPatchResponseDto patchUser(Long sessionUserID, UserPatchRequestDto patchRequestDto) {
 
         // 1. 해당 userID로 유저 존재 유무 확인(검증) + 데이터 가져오기
-        User user = userRepository.findByUserID(userID).orElseThrow(
+        User user = userRepository.findByUserID(sessionUserID).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
         // 2. 수정된 내용 User 엔티티에 반영
@@ -138,14 +143,14 @@ public class UserService {
 
     // 유저삭제(회원탈퇴)
     @Transactional
-    public void deleteUser(Long userID) {
+    public void deleteUser(Long sessionUserID) {
 
         // 1. 해당 userID로 유저 존재 유무 확인(검증) + 데이터 가져오기
-        User user = userRepository.findByUserID(userID).orElseThrow(
+        User user = userRepository.findByUserID(sessionUserID).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
         // 2. 일정의 user_id null 처리
-        scheduleRepository.clearUserFromSchedule(userID);
+        scheduleRepository.clearUserFromSchedule(sessionUserID);
 
         // 3. 유저 삭제처리 (soft delete)
         user.delete();
@@ -160,7 +165,7 @@ public class UserService {
                 () -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
         // 2. 비밀번호 일치 확인 (검증)
-        if(!user.getPassword().equals(loginRequestDto.getPassword())) {
+        if (!user.getPassword().equals(loginRequestDto.getPassword())) {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
