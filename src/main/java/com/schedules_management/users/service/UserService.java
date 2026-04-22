@@ -30,17 +30,17 @@ public class UserService {
     // 유저생성(회원가입)
     @Transactional
     public UserCreateResponseDto createUser(UserCreateRequestDto createRequestDto) {
-        // 엔티티 생성
+        // 1. 엔티티 객체 생성 (+요청 데이터 넣어주기)
         User newUser = new User(
                 createRequestDto.getName(),
                 createRequestDto.getEmail(),
                 createRequestDto.getPassword()
         );
 
-        // 저장
+        // 2. 저장 + 저장된 entity의 데이터 담기
         User savedUser = userRepository.save(newUser);
 
-        // dto 객체 생성 및 반환
+        // 3. dto 객체 생성(+저장된 데이터 넣기)
         UserCreateResponseDto createResponseDto = new UserCreateResponseDto(
                 savedUser.getUserID(),
                 savedUser.getName(),
@@ -48,6 +48,8 @@ public class UserService {
                 savedUser.getCreatedAt(),
                 savedUser.getUpdatedAt()
         );
+
+        // 4. 반환
         return createResponseDto;
     }
 
@@ -55,16 +57,19 @@ public class UserService {
     // 유저 전체조회 (이름 조회 가능)
     @Transactional(readOnly = true)
     public List<UserGetResponseDto> getAllUser(String userName) {
-        // 유저 존재 유무 확인(검증)
+        // 1. 해당 userName으로 유저 존재 유무 확인(검증)
+            // name이 null 이면 유저 확인 자체 스킵
         if (userName != null) {
             userRepository.findByUserName(userName).orElseThrow(
                     () -> new IllegalArgumentException("존재하지 않은 유저입니다."));
         }
 
-        // 해당 유저 이름 정보 OR 유저 이름 없다면 전체 유저 목록 가져오기 (DB에서 필터링 된 데이터 가져오기)
+        // 2. 유저 목록 조회(해당 유저의 정보 가져오기)
+            // name이 null 이면 전체 유저 목록 가지고 오기
+            // name이 null 이 아니면 해당 유저의 정보 가지고 오기
         List<UserGetResponseDto> getAllResponseDto = userRepository.findAllByUserName(userName)
                 .stream()
-                // dto로 변환
+                // dto 변환 (객체 생성 및 가지고 온 데이터 넣기)
                 .map(user -> new UserGetResponseDto(
                         user.getUserID(),
                         user.getName(),
@@ -73,8 +78,10 @@ public class UserService {
                         user.getUpdatedAt()
                 ))
                 // 최종 연산
+                /* 조회만 할 것이기 때문에(리스트 수정X) .toList() 로 연산 마무리 */
                 .toList();
 
+        //3. 반환
         return getAllResponseDto;
     }
 
@@ -83,11 +90,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserGetResponseDto getOneUser(Long userID) {
 
-        // 해당 userID 유무 확인(검증) + 데이터 가져오기
+        // 1. 해당 userID로 유저 존재 유무 확인(검증) + 데이터 가져오기
         User user = userRepository.findByUserID(userID).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-        // dto 객체 생성 및 반환
+        // 2. dto 객체 생성(+가져온 데이터 넣기)
         UserGetResponseDto getResponseDto = new UserGetResponseDto(
                 user.getUserID(),
                 user.getName(),
@@ -95,6 +102,8 @@ public class UserService {
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
+
+        // 3. 반환
         return getResponseDto;
     }
 
@@ -103,17 +112,17 @@ public class UserService {
     @Transactional
     public UserPatchResponseDto patchUser(Long userID, UserPatchRequestDto patchRequestDto) {
 
-        // 해당 userID 유무 확인(검증) + 데이터 가져오기
+        // 1. 해당 userID로 유저 존재 유무 확인(검증) + 데이터 가져오기
         User user = userRepository.findByUserID(userID).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-        // 수정된 내용 반영
+        // 2. 수정된 내용 User 엔티티에 반영
         user.update(
                 patchRequestDto.getEmail(),
                 patchRequestDto.getPassword()
         );
 
-        // dto 객체 생성 및 반환
+        // 2. dto 객체 생성(+수정된 데이터 넣기)
         UserPatchResponseDto patchResponseDto = new UserPatchResponseDto(
                 user.getUserID(),
                 user.getName(),
@@ -121,23 +130,27 @@ public class UserService {
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
+
+        // 3. 반환
         return patchResponseDto;
     }
+
 
     // 유저삭제(회원탈퇴)
     @Transactional
     public void deleteUser(Long userID) {
 
-        // 해당 userID 유무 확인(검증) + 데이터 담아주기
+        // 1. 해당 userID로 유저 존재 유무 확인(검증) + 데이터 가져오기
         User user = userRepository.findByUserID(userID).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-        // 일정의 user_id null 처리
+        // 2. 일정의 user_id null 처리
         scheduleRepository.clearUserFromSchedule(userID);
 
-        // 유저 삭제처리 (soft delete)
+        // 3. 유저 삭제처리 (soft delete)
         user.delete();
     }
+
 
     // 로그인
     @Transactional(readOnly = true)
