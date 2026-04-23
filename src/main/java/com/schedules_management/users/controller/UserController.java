@@ -1,6 +1,7 @@
 package com.schedules_management.users.controller;
 
-import com.schedules_management.session.LoginRequestDto;
+import com.schedules_management.exception.UnauthorizedException;
+import com.schedules_management.users.dto.UserLoginRequestDto;
 import com.schedules_management.session.SessionUser;
 import com.schedules_management.users.dto.*;
 import com.schedules_management.users.service.UserService;
@@ -61,7 +62,7 @@ public class UserController {
 
         // 로그인이 되었는지 확인
         if(sessionUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("로그인이 필요합니다.");
         }
 
         UserPatchResponseDto patchResponseAPI = userService.patchUser(sessionUser.getUserID(), patchRequestDto);
@@ -76,7 +77,7 @@ public class UserController {
 
         // 로그인이 되었는지 확인
         if(sessionUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("로그인이 필요합니다.");
         }
 
         // 유저 삭제
@@ -87,11 +88,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // 로그인
+//    // 로그인
     @PostMapping("/login")
     public ResponseEntity<Void> loginAPI(
             @Valid
-            @RequestBody LoginRequestDto loginRequestDto,
+            @RequestBody UserLoginRequestDto loginRequestDto,
             HttpSession httpSession) {
 
         SessionUser sessionUser = userService.login(loginRequestDto);
@@ -106,8 +107,8 @@ public class UserController {
             HttpSession httpSession) {
 
         // 로그인이 되었는지 확인
-        if (sessionUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if(sessionUser == null) {
+            throw new UnauthorizedException("로그인이 필요합니다.");
         }
 
         httpSession.invalidate();

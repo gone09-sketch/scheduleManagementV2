@@ -1,10 +1,10 @@
-package com.schedules_management.session;
+package com.schedules_management.users.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class LoginRequestDto {
+public class UserLoginRequestDto {
     // 속성
     @Email(message = "이메일 형식이 올바르지 않습니다.")
     @NotBlank(message = "이메일을 입력해주세요.")
@@ -15,7 +15,7 @@ public class LoginRequestDto {
     private String password;
 
     // 생성자
-    public LoginRequestDto() {}
+    public UserLoginRequestDto() {}
 
     // 기능
     // getter

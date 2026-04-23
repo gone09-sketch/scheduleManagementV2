@@ -1,6 +1,9 @@
 package com.schedules_management.schedules.service;
 
 
+import com.schedules_management.exception.ScheduleNotFoundException;
+import com.schedules_management.exception.UnauthorizedException;
+import com.schedules_management.exception.UserNotFoundException;
 import com.schedules_management.schedules.dto.*;
 import com.schedules_management.schedules.entity.Schedule;
 import com.schedules_management.schedules.repository.ScheduleRepository;
@@ -31,7 +34,7 @@ public class ScheduleService {
 
         // 1. 해당 userID로 유저 존재 유무 확인(검증)
         User user = userRepository.findByUserID(sessionUserID).orElseThrow(
-                () -> new IllegalArgumentException("존재하지 않는 유저입니다"));
+                () -> new UnauthorizedException("로그인이 필요합니다."));
 
         // 2. 엔티티 객체 생성 (+요청 데이터 넣어주기)
         Schedule newSchedule = new Schedule(
@@ -66,7 +69,7 @@ public class ScheduleService {
             // name이 null 이면 유저 확인 자체 스킵
         if (userName != null) {
             userRepository.findByUserName(userName).orElseThrow(
-                    () -> new IllegalArgumentException("존재하지 않은 유저입니다."));
+                    () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다."));
         }
 
         // 2. 일정 목록 조회(해당 유저의 일정 가져오기)
@@ -97,7 +100,7 @@ public class ScheduleService {
 
         // 1. 해당 scheduleID로 일정 존재 유무 확인(검증) + 데이터 가져와서 담기
         Schedule schedule= scheduleRepository.findById(scheduleID).orElseThrow(
-                () -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
+                () -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
 
         // 2. dto 객체 생성 (+해당 일정 데이터 받기)
         ScheduleGetResponseDto getOneResponseDto = new ScheduleGetResponseDto(
@@ -122,7 +125,7 @@ public class ScheduleService {
 
         // 2. 해당 scheduleID로 일정 존재 유무 확인(검증) + 데이터 가져와서 담기
         Schedule foundSchedule = scheduleRepository.findById(scheduleID).orElseThrow(
-                () -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
+                () -> new UnauthorizedException("로그인이 필요합니다."));
 
         // 2. 수정내용 Schedule 엔티티에 반영
         Schedule updatedSchedule = foundSchedule.update(

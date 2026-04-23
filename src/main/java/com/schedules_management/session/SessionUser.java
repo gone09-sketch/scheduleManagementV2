@@ -6,7 +6,7 @@ package com.schedules_management.session;
  * 2. DB에서 이메일로 유저 조회(검증)
  * 3. 패스워드 일치 확인 (검증)
  * 4. SessionUser 객체 생성하여 (userID와 이메일) 세션 저장
- * -> 서버 메모리에 저장되기 때문에 SessionUser에 저장하지 않는다.
+ * -> 서버 메모리에 저장되기 때문에 패스워드는 SessionUser에 저장하지 않는다.
  * 5. 이후 요청은 세션은 userID로 사용자 식별
  */
 

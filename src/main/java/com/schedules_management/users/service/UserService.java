@@ -1,7 +1,11 @@
 package com.schedules_management.users.service;
 
 
-import com.schedules_management.session.LoginRequestDto;
+import com.schedules_management.exception.DuplicateEmailException;
+import com.schedules_management.exception.InvalidCredentialsException;
+import com.schedules_management.exception.UnauthorizedException;
+import com.schedules_management.exception.UserNotFoundException;
+import com.schedules_management.users.dto.UserLoginRequestDto;
 import com.schedules_management.schedules.repository.ScheduleRepository;
 import com.schedules_management.session.SessionUser;
 import com.schedules_management.users.dto.*;
@@ -32,7 +36,7 @@ public class UserService {
     public UserCreateResponseDto createUser(UserCreateRequestDto createRequestDto) {
         // 1. 동일 이메일이 있는지 확인(중복회원가입) (검증)
         if (userRepository.existsByEmail(createRequestDto.getEmail())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
         }
 
         // 2. 엔티티 객체 생성 (+요청 데이터 넣어주기)
@@ -66,7 +70,7 @@ public class UserService {
             // name이 null 이면 유저 확인 자체 스킵
         if (userName != null) {
             userRepository.findByUserName(userName).orElseThrow(
-                    () -> new IllegalArgumentException("존재하지 않은 유저입니다."));
+                    () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다."));
         }
 
         // 2. 유저 목록 조회(해당 유저의 정보 가져오기)
@@ -97,7 +101,7 @@ public class UserService {
 
         // 1. 해당 userID로 유저 존재 유무 확인(검증) + 데이터 가져오기
         User user = userRepository.findByUserID(userID).orElseThrow(
-                () -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+                () -> new UserNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         // 2. dto 객체 생성(+가져온 데이터 넣기)
         UserGetResponseDto getResponseDto = new UserGetResponseDto(
@@ -119,7 +123,7 @@ public class UserService {
 
         // 1. 해당 userID로 유저 존재 유무 확인(검증) + 데이터 가져오기
         User user = userRepository.findByUserID(sessionUserID).orElseThrow(
-                () -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+                () -> new UnauthorizedException("로그인이 필요합니다."));
 
         // 2. 수정된 내용 User 엔티티에 반영
         user.update(
@@ -147,7 +151,7 @@ public class UserService {
 
         // 1. 해당 userID로 유저 존재 유무 확인(검증) + 데이터 가져오기
         User user = userRepository.findByUserID(sessionUserID).orElseThrow(
-                () -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+                () -> new UnauthorizedException("로그인이 필요합니다."));
 
         // 2. 일정의 user_id null 처리
         scheduleRepository.clearUserFromSchedule(sessionUserID);
@@ -159,14 +163,14 @@ public class UserService {
 
     // 로그인
     @Transactional(readOnly = true)
-    public SessionUser login(LoginRequestDto loginRequestDto) {
+    public SessionUser login(UserLoginRequestDto loginRequestDto) {
         // 1. 이메일로 유저 유무 확인 (검증)
         User user = userRepository.findByUserEmail(loginRequestDto.getEmail()).orElseThrow(
-                () -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
+                () -> new InvalidCredentialsException("이메일 혹은 비밀번호가 일치하지 않습니다."));
 
         // 2. 비밀번호 일치 확인 (검증)
         if (!user.getPassword().equals(loginRequestDto.getPassword())) {
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
+            throw new InvalidCredentialsException("이메일 혹은 비밀번호가 일치하지 않습니다.");
         }
 
         // 3. 새 SessionUser 객체에 userID와 email 저장
@@ -178,7 +182,5 @@ public class UserService {
         // 4. 반환해주기
         return newSessionUser;
     }
-
-
 
 }
