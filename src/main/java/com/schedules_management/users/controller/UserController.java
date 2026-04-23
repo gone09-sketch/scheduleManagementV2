@@ -29,8 +29,14 @@ public class UserController {
     // 유저생성(회원가입)
     @PostMapping
     public ResponseEntity<UserCreateResponseDto> createUserAPI(
+            @SessionAttribute(name = "loginUser", required = false) SessionUser sessionUser,
             @Valid
             @RequestBody UserCreateRequestDto createRequestDto) {
+
+        // 이미 로그인 상태면 차단
+        if (sessionUser != null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         UserCreateResponseDto createResponseAPI = userService.createUser(createRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createResponseAPI);
@@ -110,6 +116,9 @@ public class UserController {
         if(sessionUser == null) {
             throw new UnauthorizedException("로그인이 필요합니다.");
         }
+
+        // 로그인 상태에서 회원 탈퇴를 했다면 자동 로그아웃
+        userService.deleteUser(sessionUser.getUserID());
 
         httpSession.invalidate();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
