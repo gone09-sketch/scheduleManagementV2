@@ -16,7 +16,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findAllByUserName(@Param("userName") String userName);
 
     // 유저 null 처리
-    /* 1. Schedule 엔티티를 업데이트 할 때
+    /* 1. Schedule 엔티티를 업데이트 할 때 (회원 탈퇴 시, 일정 테이블의 user_id도 업데이트 됨)
        2. 입력받은 userID를 가진 유저의 일정을 찾아서 (WHERE s.user.userID = :userID)
        3. user 필드를 null 로 바꾼다 (SET s.user = null) = user_id 를 null 로 바꿈 (schedule테이블 수정)
        => 호출 시점이 유저 삭제(탈퇴)하는 시점이므로 탈퇴한 유저의 일정만 처리된다.

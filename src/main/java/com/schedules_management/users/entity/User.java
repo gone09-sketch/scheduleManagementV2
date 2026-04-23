@@ -19,7 +19,7 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -70,7 +70,7 @@ public class User {
         return updatedAt;
     }
     public boolean isDeleted() {
-        return isDeleted();
+        return isDeleted;
     }
 
     // update
